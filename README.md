@@ -1,11 +1,10 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Meta tags for GitHub/SEO -->
     <meta name="description" content="GATE Mechanical Engineering Practice App">
-    <title>GATE Mechanical Master</title>
+    <title>GATE SCORE</title>
     
     <!-- Tailwind and Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
