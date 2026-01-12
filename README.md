@@ -1,237 +1,313 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GATE SCORE</title>
-    <!-- Tailwind CSS for Styling -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE Mechanical Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React and ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <!-- Babel for JSX transformation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #020617; /* slate-950 */
-            overscroll-behavior-y: contain;
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
         }
-        /* Custom scrollbar for a premium look */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .subject-card:active {
+            transform: scale(0.98);
+        }
+
+        .progress-ring {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        /* Hide scrollbars */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="pb-24">
 
-    <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-blue-600 text-white p-4 shadow-lg rounded-b-3xl">
+        <div class="flex justify-between items-center max-w-2xl mx-auto">
+            <div>
+                <h1 class="text-xl font-bold">GATE Mechanical</h1>
+                <p class="text-xs text-blue-100">Excellence in Engineering</p>
+            </div>
+            <div class="bg-blue-500 p-2 rounded-full h-10 w-10 flex items-center justify-center">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto p-4 space-y-6">
         
-        // --- Lucide Icon Wrapper Component ---
-        const Icon = ({ name, size = 24, className = "" }) => {
-            const [iconSvg, setIconSvg] = useState("");
-            useEffect(() => {
-                if (window.lucide) {
-                    const icon = window.lucide.icons[name];
-                    if (icon) {
-                        // Generate SVG from lucide icons
-                        const svg = icon.toSvg({
-                            width: size,
-                            height: size,
-                            class: className,
-                            'stroke-width': 2
-                        });
-                        setIconSvg(svg);
-                    }
-                }
-            }, [name, size, className]);
-            return <span dangerouslySetInnerHTML={{ __html: iconSvg }} />;
-        };
+        <!-- Stats Section -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="glass-card p-4 rounded-2xl shadow-sm border-l-4 border-blue-500">
+                <p class="text-gray-500 text-sm">Solved Today</p>
+                <p class="text-2xl font-bold text-gray-800" id="stat-solved">12</p>
+            </div>
+            <div class="glass-card p-4 rounded-2xl shadow-sm border-l-4 border-green-500">
+                <p class="text-gray-500 text-sm">Accuracy</p>
+                <p class="text-2xl font-bold text-gray-800">85%</p>
+            </div>
+        </div>
 
-        // --- Mock Data ---
-        const SUBJECTS = [
-            { id: 'thermo', name: 'Thermodynamics', icon: 'Flame', total: 45, color: 'bg-orange-500' },
-            { id: 'som', name: 'Strength of Materials', icon: 'Construction', total: 38, color: 'bg-blue-500' },
-            { id: 'tom', name: 'Theory of Machines', icon: 'Settings', total: 32, color: 'bg-purple-500' },
-            { id: 'fm', name: 'Fluid Mechanics', icon: 'Droplets', total: 40, color: 'bg-cyan-500' },
-            { id: 'math', name: 'Eng. Mathematics', icon: 'Ruler', total: 50, color: 'bg-emerald-500' },
-            { id: 'mfg', name: 'Manufacturing', icon: 'Factory', total: 55, color: 'bg-amber-600' },
-        ];
+        <!-- App Navigation (Tabs) -->
+        <div id="view-container">
+            <!-- Subjects View (Default) -->
+            <section id="view-subjects" class="space-y-4">
+                <h2 class="text-lg font-semibold text-gray-700 px-1">Study Modules</h2>
+                <div class="grid grid-cols-1 gap-4" id="subject-list">
+                    <!-- Loaded via JS -->
+                </div>
+            </section>
 
-        const QUESTIONS_DATA = {
-            thermo: [
-                {
-                    id: 1,
-                    text: "A heat engine receives 1000 kJ of heat from a source at 1000 K and rejects heat to a sink at 300 K. If the engine produces 600 kJ of work, the efficiency and the nature of the engine are:",
-                    options: ["60%, Reversible", "60%, Irreversible", "70%, Reversible", "70%, Impossible"],
-                    correct: 1,
-                    explanation: "Efficiency = W/Q = 600/1000 = 0.6 (60%). Carnot Efficiency = 1 - (300/1000) = 0.7 (70%). Since η < η_carnot, it is irreversible."
-                },
-                {
-                    id: 2,
-                    text: "The entropy of an isolated system can never decrease. This is a statement of:",
-                    options: ["First law", "Second law", "Third law", "Zeroth law"],
-                    correct: 1,
-                    explanation: "The principle of increase of entropy for an isolated system is a direct consequence of the Second Law."
-                }
+            <!-- Quiz View (Hidden) -->
+            <section id="view-quiz" class="hidden space-y-4">
+                <div class="flex items-center justify-between">
+                    <button onclick="changeView('subjects')" class="text-blue-600"><i class="fas fa-arrow-left mr-2"></i> Back</button>
+                    <span id="quiz-progress" class="text-sm font-medium text-gray-500">Question 1/5</span>
+                </div>
+                
+                <div class="glass-card p-6 rounded-2xl shadow-md min-h-[300px] flex flex-col justify-between">
+                    <div id="question-area">
+                        <p id="question-text" class="text-lg font-medium text-gray-800 mb-6"></p>
+                        <div id="options-container" class="space-y-3">
+                            <!-- Options generated here -->
+                        </div>
+                    </div>
+                    
+                    <div id="feedback-area" class="mt-6 hidden p-4 rounded-xl text-sm"></div>
+                    
+                    <button id="next-btn" onclick="nextQuestion()" class="hidden w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg mt-6">
+                        Next Question
+                    </button>
+                </div>
+            </section>
+
+            <!-- Formulas View (Hidden) -->
+            <section id="view-formulas" class="hidden space-y-4">
+                <h2 class="text-lg font-semibold text-gray-700 px-1">Quick Revision Sheets</h2>
+                <div class="space-y-3" id="formula-list">
+                    <!-- Loaded via JS -->
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 flex justify-between items-center z-50 max-w-2xl mx-auto">
+        <button onclick="changeView('subjects')" class="nav-btn flex flex-col items-center text-blue-600" id="nav-subjects">
+            <i class="fas fa-book-open text-xl"></i>
+            <span class="text-[10px] mt-1 font-bold">Subjects</span>
+        </button>
+        <button onclick="changeView('formulas')" class="nav-btn flex flex-col items-center text-gray-400" id="nav-formulas">
+            <i class="fas fa-square-root-variable text-xl"></i>
+            <span class="text-[10px] mt-1 font-bold">Formulas</span>
+        </button>
+        <button onclick="openPerformance()" class="nav-btn flex flex-col items-center text-gray-400">
+            <i class="fas fa-chart-line text-xl"></i>
+            <span class="text-[10px] mt-1 font-bold">Stats</span>
+        </button>
+        <button onclick="openSettings()" class="nav-btn flex flex-col items-center text-gray-400">
+            <i class="fas fa-cog text-xl"></i>
+            <span class="text-[10px] mt-1 font-bold">Settings</span>
+        </button>
+    </nav>
+
+    <script>
+        const appData = {
+            subjects: [
+                { id: 'td', name: 'Thermodynamics', icon: 'fa-fire', color: 'bg-orange-100 text-orange-600', count: 120 },
+                { id: 'som', name: 'Strength of Materials', icon: 'fa-dumbbell', color: 'bg-blue-100 text-blue-600', count: 85 },
+                { id: 'fm', name: 'Fluid Mechanics', icon: 'fa-tint', color: 'bg-cyan-100 text-cyan-600', count: 94 },
+                { id: 'tom', name: 'Theory of Machines', icon: 'fa-cogs', color: 'bg-purple-100 text-purple-600', count: 70 },
+                { id: 'ht', name: 'Heat Transfer', icon: 'fa-sun', color: 'bg-red-100 text-red-600', count: 65 }
             ],
-            som: [
-                {
-                    id: 3,
-                    text: "A cantilever beam of length L is subjected to a point load P at the free end. The maximum deflection is:",
-                    options: ["PL³/3EI", "PL³/48EI", "PL³/8EI", "5PL³/384EI"],
-                    correct: 0,
-                    explanation: "Standard formula for cantilever with end load: δ = PL³ / 3EI."
-                }
+            questions: {
+                td: [
+                    {
+                        q: "A closed system undergoes a process in which there is no heat transfer. This is called?",
+                        o: ["Isothermal", "Isobaric", "Adiabatic", "Isentropic"],
+                        a: 2,
+                        ex: "In an adiabatic process, the system is thermally insulated from its surroundings (Q=0)."
+                    },
+                    {
+                        q: "The internal energy of an ideal gas is a function of:",
+                        o: ["Pressure only", "Temperature only", "Volume only", "Pressure and Volume"],
+                        a: 1,
+                        ex: "According to Joule's Law, internal energy (U) depends only on Absolute Temperature (T)."
+                    }
+                ],
+                som: [
+                    {
+                        q: "The ratio of lateral strain to axial strain is called:",
+                        o: ["Young's Modulus", "Bulk Modulus", "Poisson's Ratio", "Modulus of Rigidity"],
+                        a: 2,
+                        ex: "Poisson's ratio is the negative ratio of transverse strain to axial strain."
+                    }
+                ]
+            },
+            formulas: [
+                { title: "First Law (Closed Sys)", eq: "Q - W = ΔU" },
+                { title: "Ideal Gas Law", eq: "PV = mRT" },
+                { title: "Young's Modulus", eq: "E = σ / ε" }
             ]
         };
 
-        // --- UI Components ---
-        const VirtualCalculator = ({ isOpen, onClose }) => {
-            const [display, setDisplay] = useState('0');
-            if (!isOpen) return null;
-            const buttons = ['7', '8', '9', '/', 'sin', '4', '5', '6', '*', 'cos', '1', '2', '3', '-', 'tan', '0', '.', '=', '+', 'C'];
-            const calculate = (expr) => {
-                try {
-                    let processedExpr = expr.replace(/sin\(/g, 'Math.sin(').replace(/cos\(/g, 'Math.cos(').replace(/tan\(/g, 'Math.tan(');
-                    const result = new Function(`return (${processedExpr})`)();
-                    return Number.isFinite(result) ? parseFloat(result.toFixed(4)).toString() : 'Error';
-                } catch { return 'Error'; }
-            };
-            return (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] p-4 backdrop-blur-sm">
-                    <div className="bg-slate-900 rounded-2xl w-full max-w-[320px] p-5 border border-slate-700 shadow-2xl">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-white font-bold flex items-center gap-2"><Icon name="Calculator" size={18} className="text-blue-400"/> Calc</h3>
-                            <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
-                        </div>
-                        <div className="bg-slate-950 p-4 rounded-lg mb-4 text-right border border-slate-800">
-                            <div className="text-white text-2xl font-mono truncate">{display}</div>
-                        </div>
-                        <div className="grid grid-cols-5 gap-2">
-                            {buttons.map(btn => (
-                                <button key={btn} onClick={() => {
-                                    if(btn === 'C') setDisplay('0');
-                                    else if(btn === '=') setDisplay(prev => calculate(prev));
-                                    else setDisplay(prev => prev === '0' ? btn : prev + btn);
-                                }} className="p-3 bg-slate-800 rounded-lg text-white hover:bg-slate-700 active:scale-95">{btn}</button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
-        };
+        let currentSubject = '';
+        let currentQuestionIndex = 0;
+        let score = 0;
 
-        function App() {
-            const [view, setView] = useState('dashboard');
-            const [selectedSub, setSelectedSub] = useState(null);
-            const [currentIdx, setCurrentIdx] = useState(0);
-            const [answers, setAnswers] = useState({});
-            const [showExp, setShowExp] = useState(false);
-            const [isCalcOpen, setIsCalcOpen] = useState(false);
-
-            const startQuiz = (sub) => {
-                setSelectedSub(sub);
-                setCurrentIdx(0);
-                setAnswers({});
-                setShowExp(false);
-                setView('practice');
-            };
-
-            return (
-                <div className="min-h-screen">
-                    <nav className="border-b border-slate-800 px-6 py-4 flex justify-between items-center bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
-                        <div className="flex items-center gap-2">
-                            <div className="bg-blue-600 p-1.5 rounded-lg"><Icon name="Zap" size={20} className="text-white"/></div>
-                            <span className="text-xl font-bold text-white tracking-tighter">GATE<span className="text-blue-500">MASTER</span></span>
-                        </div>
-                        <div className="flex gap-4">
-                            <button onClick={() => setIsCalcOpen(true)} className="p-2 bg-slate-800 rounded-full text-blue-400 hover:bg-slate-700 transition-colors">
-                                <Icon name="Calculator" size={20}/>
-                            </button>
-                        </div>
-                    </nav>
-
-                    <main className="max-w-7xl mx-auto px-6 py-10">
-                        {view === 'dashboard' && (
-                            <div className="animate-in fade-in duration-700">
-                                <h1 className="text-4xl font-extrabold text-white mb-2">Ready to Ace GATE?</h1>
-                                <p className="text-slate-400 mb-10 text-lg">Select a subject to start your focused practice session.</p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {SUBJECTS.map(sub => (
-                                        <div key={sub.id} onClick={() => startQuiz(sub)} className="bg-slate-900/50 border border-slate-800 p-6 rounded-3xl hover:border-blue-500/50 transition-all cursor-pointer group">
-                                            <div className={`${sub.color} w-12 h-12 rounded-2xl flex items-center justify-center text-white text-2xl mb-4 shadow-lg`}>
-                                                <Icon name={sub.icon} size={24}/>
-                                            </div>
-                                            <h3 className="text-xl font-bold text-white mb-2">{sub.name}</h3>
-                                            <div className="flex justify-between text-xs text-slate-500 font-bold uppercase tracking-wider mb-4">
-                                                <span>{QUESTIONS_DATA[sub.id]?.length || 0} Questions</span>
-                                                <span>82% Proficiency</span>
-                                            </div>
-                                            <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                                                <div className="bg-blue-500 h-full w-[82%]"></div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {view === 'practice' && selectedSub && (
-                            <div className="max-w-3xl mx-auto">
-                                <div className="flex justify-between items-center mb-8">
-                                    <button onClick={() => setView('dashboard')} className="text-slate-400 flex items-center gap-2 hover:text-white"><Icon name="ArrowLeft" size={20}/> Exit</button>
-                                    <div className="text-blue-500 font-mono font-bold">Question {currentIdx + 1}/{QUESTIONS_DATA[selectedSub.id]?.length}</div>
-                                </div>
-                                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
-                                    <p className="text-white text-xl mb-10 leading-relaxed">{QUESTIONS_DATA[selectedSub.id][currentIdx].text}</p>
-                                    <div className="space-y-4">
-                                        {QUESTIONS_DATA[selectedSub.id][currentIdx].options.map((opt, i) => (
-                                            <button 
-                                                key={i}
-                                                disabled={showExp}
-                                                onClick={() => { setAnswers({...answers, [currentIdx]: i}); setShowExp(true); }}
-                                                className={`w-full text-left p-5 rounded-2xl border-2 transition-all ${
-                                                    showExp 
-                                                    ? (i === QUESTIONS_DATA[selectedSub.id][currentIdx].correct ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400' : (answers[currentIdx] === i ? 'bg-red-500/10 border-red-500 text-red-400' : 'bg-slate-800/30 border-slate-800 text-slate-500'))
-                                                    : 'bg-slate-800/50 border-slate-800 text-slate-300 hover:border-slate-600'
-                                                }`}
-                                            >
-                                                {opt}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    {showExp && (
-                                        <div className="mt-10 p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
-                                            <h4 className="text-blue-400 font-bold mb-2 flex items-center gap-2"><Icon name="Lightbulb" size={18}/> Explanation</h4>
-                                            <p className="text-slate-400 text-sm">{QUESTIONS_DATA[selectedSub.id][currentIdx].explanation}</p>
-                                            <button onClick={() => {
-                                                if(currentIdx < QUESTIONS_DATA[selectedSub.id].length - 1) { setCurrentIdx(currentIdx+1); setShowExp(false); }
-                                                else setView('dashboard');
-                                            }} className="mt-6 w-full bg-blue-600 py-4 rounded-2xl text-white font-bold hover:bg-blue-500 transition-colors">
-                                                {currentIdx < QUESTIONS_DATA[selectedSub.id].length - 1 ? 'Next Question' : 'Finish Session'}
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </main>
-
-                    <VirtualCalculator isOpen={isCalcOpen} onClose={() => setIsCalcOpen(false)} />
-                </div>
-            );
+        function init() {
+            renderSubjects();
+            renderFormulas();
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        function renderSubjects() {
+            const list = document.getElementById('subject-list');
+            list.innerHTML = appData.subjects.map(s => `
+                <div onclick="startQuiz('${s.id}')" class="subject-card glass-card p-4 rounded-2xl flex items-center justify-between cursor-pointer transition-all active:bg-gray-50">
+                    <div class="flex items-center space-x-4">
+                        <div class="${s.color} w-12 h-12 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fas ${s.icon}"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800">${s.name}</h3>
+                            <p class="text-xs text-gray-500">${s.count} Questions Available</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+            `).join('');
+        }
+
+        function renderFormulas() {
+            const list = document.getElementById('formula-list');
+            list.innerHTML = appData.formulas.map(f => `
+                <div class="glass-card p-4 rounded-xl">
+                    <p class="text-xs font-bold text-blue-600 uppercase mb-1">${f.title}</p>
+                    <p class="text-xl font-mono text-gray-800">$$ ${f.eq} $$</p>
+                </div>
+            `).join('');
+        }
+
+        function changeView(viewId) {
+            document.querySelectorAll('#view-container > section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            
+            // Update Nav Icons
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('text-blue-600', 'text-gray-400'));
+            const activeBtn = document.getElementById(`nav-${viewId}`);
+            if(activeBtn) activeBtn.classList.replace('text-gray-400', 'text-blue-600');
+        }
+
+        function startQuiz(subjectId) {
+            currentSubject = subjectId;
+            currentQuestionIndex = 0;
+            score = 0;
+            changeView('quiz');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const questions = appData.questions[currentSubject] || appData.questions['td'];
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('quiz-progress').innerText = `Question ${currentQuestionIndex + 1}/${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+            
+            const optionsHtml = q.o.map((opt, idx) => `
+                <button onclick="checkAnswer(${idx})" class="option-btn w-full p-4 text-left border-2 border-gray-100 rounded-xl hover:border-blue-200 transition-colors bg-white">
+                    <span class="inline-block w-8 h-8 rounded-full bg-gray-50 text-center leading-8 mr-3 font-bold text-gray-400">${String.fromCharCode(65 + idx)}</span>
+                    ${opt}
+                </button>
+            `).join('');
+            
+            document.getElementById('options-container').innerHTML = optionsHtml;
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function checkAnswer(idx) {
+            const questions = appData.questions[currentSubject] || appData.questions['td'];
+            const q = questions[currentQuestionIndex];
+            const btns = document.querySelectorAll('.option-btn');
+            
+            // Disable all buttons
+            btns.forEach(b => b.disabled = true);
+            
+            const feedback = document.getElementById('feedback-area');
+            feedback.classList.remove('hidden');
+            
+            if (idx === q.a) {
+                btns[idx].classList.add('border-green-500', 'bg-green-50');
+                feedback.innerHTML = `<p class="text-green-700 font-bold">Correct!</p><p class="text-green-600">${q.ex}</p>`;
+                feedback.className = "mt-6 p-4 rounded-xl text-sm bg-green-100";
+                score++;
+            } else {
+                btns[idx].classList.add('border-red-500', 'bg-red-50');
+                btns[q.a].classList.add('border-green-500', 'bg-green-50');
+                feedback.innerHTML = `<p class="text-red-700 font-bold">Wrong Answer</p><p class="text-red-600">${q.ex}</p>`;
+                feedback.className = "mt-6 p-4 rounded-xl text-sm bg-red-100";
+            }
+            
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            const questions = appData.questions[currentSubject] || appData.questions['td'];
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            const container = document.getElementById('question-area');
+            container.innerHTML = `
+                <div class="text-center py-10">
+                    <div class="text-6xl mb-4">🏆</div>
+                    <h2 class="text-2xl font-bold text-gray-800">Quiz Completed!</h2>
+                    <p class="text-gray-500 mt-2">You scored ${score} out of ${appData.questions[currentSubject].length}</p>
+                    <button onclick="changeView('subjects')" class="mt-8 bg-blue-600 text-white px-8 py-3 rounded-full font-bold">Back to Subjects</button>
+                </div>
+            `;
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            
+            // Update local storage stats
+            let total = parseInt(document.getElementById('stat-solved').innerText);
+            document.getElementById('stat-solved').innerText = total + score;
+        }
+
+        function openPerformance() {
+            alert("This feature tracks your chapter-wise proficiency. (Demo Mode)");
+        }
+
+        function openSettings() {
+            alert("Settings: Dark Mode, Notification triggers, and Profile management.");
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
+
 
